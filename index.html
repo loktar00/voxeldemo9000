@@ -1,18 +1,207 @@
-
 <!doctype html>
 <html>
 	<head>
-        <style>
-            html,body{
-                padding: 0;
-                margin: 0;
-                overflow: hidden;
-            }
-        </style>
+		<style>
+			html, body {
+				padding: 0;
+				margin: 0;
+				overflow: hidden;
+				background: #000;
+			}
+			canvas {
+				width: 100vw;
+				height: 100vh;
+				display: block;
+				image-rendering: pixelated;
+				image-rendering: crisp-edges;
+			}
+			#fps {
+				position: fixed;
+				top: 8px;
+				left: 10px;
+				color: rgba(255,255,255,0.7);
+				font-family: monospace;
+				font-size: 13px;
+				z-index: 5;
+				pointer-events: none;
+				text-shadow: 1px 1px 2px #000;
+			}
+			#overlay {
+				position: fixed;
+				top: 0; left: 0; right: 0; bottom: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: rgba(0,0,0,0.65);
+				z-index: 10;
+				cursor: pointer;
+			}
+			#overlay .box {
+				color: #fff;
+				font-family: monospace;
+				font-size: 14px;
+				text-align: center;
+				line-height: 1.7;
+				max-width: 420px;
+			}
+			#overlay .box h2 {
+				margin: 0 0 14px;
+				font-size: 22px;
+				letter-spacing: 1px;
+			}
+			#overlay .controls {
+				margin-bottom: 18px;
+				opacity: 0.85;
+			}
+			#overlay .settings {
+				background: rgba(255,255,255,0.07);
+				border-radius: 8px;
+				padding: 14px 18px;
+				margin-bottom: 18px;
+				text-align: left;
+			}
+			#overlay .settings-title {
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				opacity: 0.5;
+				margin-bottom: 10px;
+				text-align: center;
+			}
+			.setting-row {
+				display: flex;
+				align-items: center;
+				margin-bottom: 8px;
+			}
+			.setting-row:last-child {
+				margin-bottom: 0;
+			}
+			.setting-label {
+				width: 80px;
+				font-size: 13px;
+				opacity: 0.7;
+				flex-shrink: 0;
+			}
+			.setting-options {
+				display: flex;
+				gap: 4px;
+				flex: 1;
+			}
+			.setting-options button {
+				background: rgba(255,255,255,0.08);
+				border: 1px solid rgba(255,255,255,0.15);
+				color: rgba(255,255,255,0.6);
+				font-family: monospace;
+				font-size: 12px;
+				padding: 4px 10px;
+				border-radius: 4px;
+				cursor: pointer;
+				transition: all 0.15s;
+				flex: 1;
+			}
+			.setting-options button:hover {
+				background: rgba(255,255,255,0.15);
+				color: #fff;
+			}
+			.setting-options button.active {
+				background: rgba(80,180,120,0.4);
+				border-color: rgba(80,180,120,0.7);
+				color: #fff;
+			}
+			#overlay .click-hint {
+				margin-top: 4px;
+				font-size: 18px;
+				opacity: 0.9;
+			}
+			#loading {
+				position: fixed;
+				top: 0; left: 0; right: 0; bottom: 0;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				background: #000;
+				z-index: 20;
+				color: #fff;
+				font-family: monospace;
+			}
+			#loading .title {
+				font-size: 22px;
+				margin-bottom: 20px;
+			}
+			#loading .status {
+				font-size: 14px;
+				margin-bottom: 10px;
+				opacity: 0.7;
+			}
+			#loading .bar-outer {
+				width: 300px;
+				height: 16px;
+				border: 1px solid #555;
+				border-radius: 8px;
+				overflow: hidden;
+				background: #111;
+			}
+			#loading .bar-inner {
+				height: 100%;
+				width: 0%;
+				background: linear-gradient(90deg, #2a6, #4c8);
+				transition: width 0.15s ease;
+				border-radius: 8px;
+			}
+		</style>
 	</head>
 	<body>
-		<canvas id="canvas"></canvas>
-        <canvas id="voxCanvas"></canvas>
-	    <script src="./oldreference.js"></script>
+		<canvas id="voxCanvas"></canvas>
+		<div id="fps">-- FPS</div>
+		<div id="loading">
+			<div class="title">Voxel Space Engine</div>
+			<div class="status" id="loadStatus">Generating terrain...</div>
+			<div class="bar-outer"><div class="bar-inner" id="loadBar"></div></div>
+		</div>
+		<div id="overlay">
+			<div class="box">
+				<h2>Voxel Space Engine</h2>
+				<div class="controls">
+					WASD — Move<br>
+					Mouse — Look around<br>
+					Space / Shift — Up / Down<br>
+					G — Toggle gravity mode<br>
+					1-4 — Detail level
+				</div>
+				<div class="settings">
+					<div class="settings-title">Settings</div>
+					<div class="setting-row">
+						<span class="setting-label">Detail</span>
+						<div class="setting-options" id="detailOptions">
+							<button data-val="1">Low</button>
+							<button data-val="2">Med</button>
+							<button data-val="3">High</button>
+							<button data-val="4">Ultra</button>
+						</div>
+					</div>
+					<div class="setting-row">
+						<span class="setting-label">Fog</span>
+						<div class="setting-options" id="fogOptions">
+							<button data-val="0">Off</button>
+							<button data-val="1">Near</button>
+							<button data-val="2">Med</button>
+							<button data-val="3">Far</button>
+						</div>
+					</div>
+					<div class="setting-row">
+						<span class="setting-label">Resolution</span>
+						<div class="setting-options" id="resOptions">
+							<button data-val="0.25">25%</button>
+							<button data-val="0.5">50%</button>
+							<button data-val="0.75">75%</button>
+							<button data-val="1">100%</button>
+						</div>
+					</div>
+				</div>
+				<div class="click-hint">Click to play</div>
+			</div>
+		</div>
+		<script type="module" src="./engine.js"></script>
 	</body>
 </html>
