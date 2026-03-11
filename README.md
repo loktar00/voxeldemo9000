@@ -46,7 +46,7 @@ At terrain generation time, each heightmap pixel ray-marches toward a virtual su
 
 ### Billboard Sprites & Depth Sorting
 
-Entities (birds, deer, stars) are projected into screen space using the same frustum math as the terrain renderer. A per-pixel depth buffer (`Float32Array`) is written during terrain rendering, storing the depth of every drawn pixel. Sprites check `spriteDepth < depthBuf[pixel]` before drawing each pixel — this gives correct per-pixel occlusion without needing to sort sprites by distance.
+Entities (birds, creatures, stars) are projected into screen space using the same frustum math as the terrain renderer. A per-pixel depth buffer (`Float32Array`) is written during terrain rendering, storing the depth of every drawn pixel. Sprites check `spriteDepth < depthBuf[pixel]` before drawing each pixel — this gives correct per-pixel occlusion without needing to sort sprites by distance.
 
 ## Architecture
 
@@ -63,6 +63,6 @@ Entities (birds, deer, stars) are projected into screen space using the same fru
 
 ## Credits & History
 
-The author's original voxel space work dates back to 2013: [codepen.io/loktar00/details/nmPEdP](https://codepen.io/loktar00/details/nmPEdP). `oldreference.js` is the preserved prototype from that era.
+Original voxel space work dates back to 2013 or so. `oldreference` is the preserved prototype from that era.
 
 The rendering technique was popularized by Novalogic's **Comanche: Maximum Overkill** (1992) and is commonly known as the "Comanche algorithm" or "voxel space" rendering.
