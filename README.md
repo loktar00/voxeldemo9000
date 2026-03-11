@@ -4,6 +4,8 @@ Browser-based 3D voxel terrain renderer using Canvas 2D raycasting. No build sys
 
 **[Live Demo](https://loktar00.github.io/voxeldemo9000/)**
 
+https://github.com/user-attachments/assets/85f7443f-ccdc-40a7-9f04-f9927df3bc0a
+
 ## How to Run
 
 Open `index.html` directly in a browser, or use any static file server:
